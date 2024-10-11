@@ -1,4 +1,4 @@
-use std::{borrow::Cow, fs::File, io::Read, path::Path};
+use std::{borrow::Cow, fs::File, io::Read, path::PathBuf};
 use zip::ZipArchive;
 
 mod error;
@@ -38,7 +38,7 @@ pub struct ZipFileContents<'a> {
 ///     let zip = from_zipfile(fname.to_string(), None).await?;
 /// }
 /// ```
-pub async fn from_zipfile<P: AsRef<Path> + Send + Sync + Clone + 'static>(
+pub async fn from_zipfile<P: Into<PathBuf> + Send + Sync + Clone>(
     zip_file: P,
     password_list: Option<Vec<String>>,
 ) -> Result<Vec<ZipFileContents<'static>>> {
@@ -57,9 +57,9 @@ pub async fn from_zipfile<P: AsRef<Path> + Send + Sync + Clone + 'static>(
     };
 
     for pass in password_list {
-        let zip_file = zip_file.clone();
+        let zipp_file: PathBuf = zip_file.clone().into();
         threads.push(tokio::task::spawn(async move {
-            let zipfile = File::open(zip_file.clone())?;
+            let zipfile = File::open(zipp_file)?;
             let mut zip = ZipArchive::new(zipfile)?;
             (0..zip.len()).try_fold(vec![], move |mut zfc_vec, i| {
                 let mut file = zip.by_index_decrypt(i, pass.as_bytes())?;
@@ -92,8 +92,8 @@ pub async fn from_zipfile<P: AsRef<Path> + Send + Sync + Clone + 'static>(
 }
 
 /// Get total files in the zip file
-pub fn get_total_files<P: AsRef<Path>>(zipfile: P) -> Result<usize> {
-    let file = File::open(zipfile)?;
+pub fn get_total_files<P: Into<PathBuf>>(zipfile: P) -> Result<usize> {
+    let file = File::open(zipfile.into())?;
     let archive = ZipArchive::new(file)?;
 
     Ok(archive.len())
