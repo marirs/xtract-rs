@@ -1,6 +1,6 @@
 [package]
 name = "xtract"
-version = "0.1.1"
+version = "0.1.2"
 description = "Extract files from Zip and return a array of file buffers"
 authors = ["SG <marirs@gmail.com>"]
 license-file = "LICENSE"
