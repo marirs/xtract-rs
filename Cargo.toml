@@ -1,0 +1,9 @@
+[package]
+name = "xtract"
+version = "0.1.1"
+description = "Extract files from Zip and return a array of file buffers"
+authors = ["SG <marirs@gmail.com>"]
+edition = "2021"
+
+[dependencies]
+
