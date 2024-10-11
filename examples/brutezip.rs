@@ -20,7 +20,11 @@ async fn main() -> Result<()> {
         eprintln!(
             "[*] decrypted {} files with pass {}",
             zip.len(),
-            if let Some(pass) = &zip[0].zip_password{pass}else{"NONE"}
+            if let Some(pass) = &zip[0].zip_password {
+                pass
+            } else {
+                "NONE"
+            }
         );
     }
     Ok(())

@@ -42,7 +42,9 @@ pub async fn from_zipfile<P: AsRef<Path> + Send + Sync + Clone + 'static>(
     zip_file: P,
     password_list: Option<Vec<String>>,
 ) -> Result<Vec<ZipFileContents<'static>>> {
-    let mut threads:  Vec<tokio::task::JoinHandle<std::result::Result<Vec<ZipFileContents<'_>>, Error>>>  = vec![];
+    let mut threads: Vec<
+        tokio::task::JoinHandle<std::result::Result<Vec<ZipFileContents<'_>>, Error>>,
+    > = vec![];
     let password_list = if let Some(mut passwords) = password_list {
         // add for empty/none password
         passwords.push("".to_string());
@@ -83,9 +85,7 @@ pub async fn from_zipfile<P: AsRef<Path> + Send + Sync + Clone + 'static>(
             Err(e) => {
                 err = e.into();
             }
-            Ok(Err(e)) => {
-                err = e
-            }
+            Ok(Err(e)) => err = e,
         }
     }
     Err(err)
