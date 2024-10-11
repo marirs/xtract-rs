@@ -42,7 +42,7 @@ pub async fn from_zipfile<P: AsRef<Path> + Send + Sync + Clone + 'static>(
     zip_file: P,
     password_list: Option<Vec<String>>,
 ) -> Result<Vec<ZipFileContents<'static>>> {
-    let mut threads = vec![];
+    let mut threads:  Vec<tokio::task::JoinHandle<std::result::Result<Vec<ZipFileContents<'_>>, Error>>>  = vec![];
     let password_list = if let Some(mut passwords) = password_list {
         // add for empty/none password
         passwords.push("".to_string());
@@ -59,7 +59,7 @@ pub async fn from_zipfile<P: AsRef<Path> + Send + Sync + Clone + 'static>(
         threads.push(tokio::task::spawn(async move {
             let zipfile = File::open(zip_file.clone())?;
             let mut zip = ZipArchive::new(zipfile)?;
-            if let Ok(zip_contents) = (0..zip.len()).try_fold(vec![], move |mut zfc_vec, i| {
+            Ok((0..zip.len()).try_fold(vec![], move |mut zfc_vec, i| {
                 let mut file = zip.by_index_decrypt(i, pass.as_bytes())?;
                 let mut f_buf = vec![];
                 file.read_to_end(&mut f_buf)?;
@@ -73,19 +73,22 @@ pub async fn from_zipfile<P: AsRef<Path> + Send + Sync + Clone + 'static>(
                     },
                 });
                 Ok::<_, Error>(zfc_vec)
-            }) {
-                Ok(zip_contents)
-            } else {
-                Err(Error::CannotDecrypt)
-            }
+            })?)
         }));
     }
+    let mut err = Error::CannotDecrypt;
     for thread_handle in threads {
-        if let Ok(Ok(res)) = thread_handle.await {
-            return Ok(res);
+        match thread_handle.await {
+            Ok(Ok(res)) => return Ok(res),
+            Err(e) => {
+                err = e.into();
+            }
+            Ok(Err(e)) => {
+                err = e.into()
+            }
         }
     }
-    Err(Error::CannotDecrypt)
+    Err(err)
 }
 
 /// Get total files in the zip file

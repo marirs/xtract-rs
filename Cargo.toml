@@ -2,7 +2,7 @@
 name = "xtract"
 version = "0.1.3"
 description = "Extract files from Zip and return a array of file buffers"
-authors = ["SG <marirs@gmail.com>"]
+authors = ["SG <marirs@gmail.com>", "Andrey <andrey@3ig.dev>"]
 license-file = "LICENSE"
 edition = "2021"
 
