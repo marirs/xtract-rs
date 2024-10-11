@@ -17,6 +17,7 @@ pub struct ZipFileContents<'a> {
 }
 
 /// Extract all files from a given Zip file
+/// Zipfile can be password protected or not. This fn can handle both types
 ///
 /// Parameters: path/to/zip-file, Password List
 /// Returns: Error or ZipFileContents Struct
@@ -30,19 +31,28 @@ pub struct ZipFileContents<'a> {
 ///     let fname = "/path/to/zip";
 ///     let passwords = vec!["test".to_string(), "test123".to_string(), "etc".to_string()];
 ///
-///     let zip = from_zipfile(fname.to_string(), passwords).await?;
+///     // With a password list
+///     let zip = from_zipfile(fname.to_string(), Some(passwords)).await?;
+///
+///     // If no password
+///     let zip = from_zipfile(fname.to_string(), None).await?;
 /// }
 /// ```
 pub async fn from_zipfile<P: AsRef<Path> + Send + Sync + Clone + 'static>(
     zip_file: P,
-    mut password_list: Vec<String>,
+    password_list: Option<Vec<String>>,
 ) -> Result<Vec<ZipFileContents<'static>>> {
     let mut threads = vec![];
-    // add for empty/none password
-    password_list.push("".to_string());
-    // sort and dedupe the vec
-    password_list.sort();
-    password_list.dedup();
+    let password_list = if let Some(mut passwords) = password_list {
+        // add for empty/none password
+        passwords.push("".to_string());
+        // sort and dedupe the vec
+        passwords.sort();
+        passwords.dedup();
+        passwords
+    } else {
+        vec!["".to_string()]
+    };
 
     for pass in password_list {
         let zip_file = zip_file.clone();
