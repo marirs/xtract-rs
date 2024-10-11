@@ -13,7 +13,7 @@ async fn main() -> Result<()> {
     eprintln!("File: {}", file_name);
     eprintln!("Passwords: {:?}", passwords);
 
-    let zip = from_zipfile(file_name.to_string(), passwords.to_vec()).await?;
+    let zip = from_zipfile(file_name.to_string(), Some(passwords.to_vec())).await?;
     if zip.is_empty() {
         eprintln!("[!] can`t decrypt");
     } else {
