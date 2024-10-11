@@ -59,7 +59,7 @@ pub async fn from_zipfile<P: AsRef<Path> + Send + Sync + Clone + 'static>(
         threads.push(tokio::task::spawn(async move {
             let zipfile = File::open(zip_file.clone())?;
             let mut zip = ZipArchive::new(zipfile)?;
-            Ok((0..zip.len()).try_fold(vec![], move |mut zfc_vec, i| {
+            (0..zip.len()).try_fold(vec![], move |mut zfc_vec, i| {
                 let mut file = zip.by_index_decrypt(i, pass.as_bytes())?;
                 let mut f_buf = vec![];
                 file.read_to_end(&mut f_buf)?;
@@ -73,7 +73,7 @@ pub async fn from_zipfile<P: AsRef<Path> + Send + Sync + Clone + 'static>(
                     },
                 });
                 Ok::<_, Error>(zfc_vec)
-            })?)
+            })
         }));
     }
     let mut err = Error::CannotDecrypt;
@@ -84,7 +84,7 @@ pub async fn from_zipfile<P: AsRef<Path> + Send + Sync + Clone + 'static>(
                 err = e.into();
             }
             Ok(Err(e)) => {
-                err = e.into()
+                err = e
             }
         }
     }
