@@ -13,7 +13,7 @@ pub struct ZipFileContents<'a> {
     /// file buffer
     pub buffer: Vec<u8>,
     /// Zip password if any/identified
-    pub zip_password: Cow<'a, str>,
+    pub zip_password: Option<Cow<'a, str>>,
 }
 
 /// Extract all files from a given Zip file
@@ -67,9 +67,9 @@ pub async fn from_zipfile<P: AsRef<Path> + Send + Sync + Clone + 'static>(
                     filename: Cow::from(file.name().to_string()),
                     buffer: f_buf,
                     zip_password: if pass.is_empty() {
-                        Cow::from("NONE")
+                        None
                     } else {
-                        Cow::from(pass.to_string())
+                        Some(Cow::from(pass.to_string()))
                     },
                 });
                 Ok::<_, Error>(zfc_vec)
