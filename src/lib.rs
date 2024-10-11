@@ -87,3 +87,11 @@ pub async fn from_zipfile<P: AsRef<Path> + Send + Sync + Clone + 'static>(
     }
     Err(Error::CannotDecrypt)
 }
+
+/// Get total files in the zip file
+pub fn get_total_files<P: AsRef<Path>>(zipfile: P) -> Result<usize> {
+    let file = File::open(zipfile)?;
+    let archive = ZipArchive::new(file)?;
+
+    Ok(archive.len())
+}
